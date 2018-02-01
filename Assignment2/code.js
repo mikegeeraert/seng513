@@ -3,7 +3,7 @@ var words, lines;
 function getStats(txt) {
     txt = txt.toLowerCase(); //Lowercase entire text string before getting statistics
     words = null;
-    lines - null;
+    lines = null;
     return {
         nChars: nChars(txt),
         nWords: nWords(txt),
