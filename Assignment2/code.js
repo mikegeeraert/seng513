@@ -97,7 +97,11 @@ function mostFrequentWords(txt) {
     /*  Object.entries() generates array of the word frequencies with the frequent words 
         so we have something thats sortable. This looks something like [["bazooka", 5], ["boom", 7]]
         After that, we sort based on frequency for each word */
-    frequentWords = Object.entries(frequentWords).sort((a, b) => b[1] - a[1]);
+    frequentWords = Object.entries(frequentWords).sort((a, b) => {
+        primary = b[1] - a[1]; //primary sort on frequencies
+        secondary = a[0].localeCompare(b[0]); // secondary sort alphabetically 
+        return primary || secondary;
+    });
     // Take our sorted list and map to concatenate the frequency to the word to look like: ["boom(7)", "bazooka(5)"]
     frequentWords = frequentWords.map(pair => pair[0] + "(" + pair[1] + ")");
     
