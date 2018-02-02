@@ -61,14 +61,16 @@ function maxLineLength(txt) {
 }
 
 function palindromes(txt) {
-    var words = getWords(txt);
-    var palindromes = [];
-
-    words.forEach(findPalindrome);
-    function findPalindrome(word) {
-        if (word.length <= 2) return;
+    var words = getWords(txt).reduce(largerThanTwoChars, []);
+    function largerThanTwoChars(matchingWords, word) {
+        word.length > 2 ? matchingWords.push(word) : null;
+        return matchingWords;
+    }
+    var palindromes = words.reduce(findPalindromes, []);
+    function findPalindromes(palindromes, word) {
         var drow = word.split('').reverse().join('');
         drow === word ? palindromes.push(word) : null;
+        return palindromes;
     }
     return palindromes;
 }
@@ -110,14 +112,13 @@ function mostFrequentWords(txt) {
 
 
 //getter methods for words and lines
-
 function getWords(txt) {
-    words = words || txt.match(/[\w\d]+/g) || [];
+    words = words || txt.match(/[\w\d]+/g) || []; //Only regex matches once if called multiple times
     return words;
 }
 
 function getLines(txt) {
-    lines = lines || txt.split("\n") || [];
+    lines = lines || txt.split("\n") || []; ////Only splits once if called multiple times
     return lines;
 }
 
