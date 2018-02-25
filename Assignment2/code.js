@@ -1,4 +1,4 @@
-var words, lines;
+let words, lines;
 
 function getStats(txt) {
     txt = txt.toLowerCase(); //Lowercase entire text string before getting statistics
@@ -30,19 +30,19 @@ function nLines(txt) {
 }
 
 function nNonEmptyLines(txt) {
-    var lines = getLines(txt);
-    var nonemptylines = 0;
-    for (var i = 0; i < lines.length; i++) {
+    let lines = getLines(txt);
+    let nonemptylines = 0;
+    for (let i = 0; i < lines.length; i++) {
        lines[i].match(/[^\n\s\t]+/g) ? nonemptylines++ : null;
     }
     return nonemptylines;
 }
 
 function averageWordLength(txt){
-    var words  = getWords(txt);
-    var sum = 0;
+    let words  = getWords(txt);
+    let sum = 0;
 
-    words.forEach(getLength)
+    words.forEach(getLength);
     function getLength(word) { 
         sum += word.length; 
     }
@@ -50,10 +50,10 @@ function averageWordLength(txt){
 }
 
 function maxLineLength(txt) {
-    var lines = getLines(txt);
-    var max = 0;
+    let lines = getLines(txt);
+    let max = 0;
 
-    lines.forEach(getMax)
+    lines.forEach(getMax);
     function getMax(line) {
         max = max < line.length ? line.length : max;
     }
@@ -61,14 +61,14 @@ function maxLineLength(txt) {
 }
 
 function palindromes(txt) {
-    var words = getWords(txt).reduce(largerThanTwoChars, []);
+    let words = getWords(txt).reduce(largerThanTwoChars, []);
     function largerThanTwoChars(matchingWords, word) {
         word.length > 2 ? matchingWords.push(word) : null;
         return matchingWords;
     }
-    var palindromes = words.reduce(findPalindromes, []);
+    let palindromes = words.reduce(findPalindromes, []);
     function findPalindromes(palindromes, word) {
-        var drow = word.split('').reverse().join('');
+        let drow = word.split('').reverse().join('');
         drow === word ? palindromes.push(word) : null;
         return palindromes;
     }
@@ -76,12 +76,12 @@ function palindromes(txt) {
 }
 
 function longestWords(txt) {
-    var words = Array.from(new Set(getWords(txt))); //get the words and dedupe using a set
+    let words = Array.from(new Set(getWords(txt))); //get the words and dedupe using a set
 
     words.sort(compareLengths);
     function compareLengths(a, b) {
-        var primary =  b.length - a.length; // primary sort on length
-        var secondary = a.localeCompare(b); // secondary sort alphabetically
+        let primary =  b.length - a.length; // primary sort on length
+        let secondary = a.localeCompare(b); // secondary sort alphabetically
         return primary || secondary;
     }
 
@@ -89,10 +89,10 @@ function longestWords(txt) {
 }
 
 function mostFrequentWords(txt) {
-    var words = getWords(txt);
+    let words = getWords(txt);
     /*  find the frequency of every word in the text, and create an object
         representing each word and their frequencies */
-    var frequentWords = words.reduce((matchedWords, currentWord) => {
+    let frequentWords = words.reduce((matchedWords, currentWord) => {
         matchedWords.hasOwnProperty(currentWord) ? matchedWords[currentWord] += 1 : matchedWords[currentWord] = 1;
         return matchedWords;
     }, {});
