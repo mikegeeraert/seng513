@@ -14,16 +14,14 @@ http.listen( port, function () {
 app.use(express.static(__dirname + '/public'));
 
 // listen to 'chat' messages
-io.on('connection', function(socket){
+io.on('connection', socket => {
     socket.on('chat', function(msg){
         msgHistory.push(buildMsg(msg));
 	    io.emit('chat', msgHistory[msgHistory.length-1]);
     });
-    socket.on('newUser', userName => {
-        console.log('User has name from cookie: ', userName);
-        io.emit('newUser', addUser(userName));
+    socket.on('newUser', (username, callbackFn) => {
+        callbackFn(addUser(username));
         console.log('New User has entered the arena', users);
-
     });
 });
 

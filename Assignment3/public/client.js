@@ -1,16 +1,30 @@
 $(function() {
     let socket = io();
 
-    socket.emit('newUser', findUsername());
-    socket.on('newUser', response => loadConversation(response));
+    socket.emit('newUser', findUsername(), response => loadConversation(response));
 
     $('form').submit(function(){
-	socket.emit('chat', buildMessage());
-	$('#m').val('');
-	return false;
+        input = $('#m').val();
+        determineAction(input);
+	    $('#m').val('');
+	    return false;
     });
     socket.on('chat', msg => addMessageToPage(msg));
 });
+
+function determineAction(input) {
+    if (input.startsWith('/nick')) { changeNickname(input) }
+    else if (input.startsWith('/nickcolor')) { changeColor(input) }
+    else { socket.emit('chat', buildMessage()) }
+}
+
+function changeNickname(input) {
+
+}
+
+function changeColor(input) {
+
+}
 
 function buildMessage() {
     return {
@@ -31,5 +45,19 @@ function loadConversation(response) {
 }
 
 function addMessageToPage(msg) {
-    $('#messages').append($('<li>').text(msg['msg']));
+    $('#messages').append(buildMessageToDisplay(msg));
+}
+
+function buildMessageToDisplay(msg) {
+    let item = $('<li></li>');
+    let username = $('<div></div>').text(msg['username']);
+    let timestamp = new Date(msg['timestamp']);
+    let localeOptions = {hour: 'numeric', minute: 'numeric'};
+    let timeSent = $('<div></div>').text(timestamp.toLocaleTimeString('en-US', localeOptions));
+
+    let message = $('<div></div>').text(msg['msg']);
+
+    item.append(username, timeSent, message);
+    return item;
+
 }

@@ -122,7 +122,3 @@ function getLines(txt) {
     return lines;
 }
 
-function isTextEmpty(txt) {
-    return txt.length === 0;
-}
-
