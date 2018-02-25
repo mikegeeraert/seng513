@@ -9,8 +9,8 @@ function getStats(txt) {
         nWords: nWords(txt),
         nLines: nLines(txt),
         nNonEmptyLines: nNonEmptyLines(txt),
-        averageWordLength: averageWordLength(txt),
         maxLineLength: maxLineLength(txt),
+        averageWordLength: averageWordLength(txt),
         palindromes: palindromes(txt),
         longestWords: longestWords(txt),
         mostFrequentWords: mostFrequentWords(txt)
