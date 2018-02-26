@@ -19,28 +19,41 @@ io.on('connection', socket => {
         msgHistory.push(buildMsg(msg));
 	    io.emit('chat', msgHistory[msgHistory.length-1]);
     });
-    socket.on('newUser', (username, callbackFn) => {
-        callbackFn(addUser(username));
+    socket.on('newUser', (nickname, callbackFn) => {
+        callbackFn(addUser(nickname));
         console.log('New User has entered the arena', users);
+    });
+    socket.on('changeNickname', (nicknames, callbackFn) => {
+        callbackFn(changeNickname(nicknames));
     });
 });
 
 function buildMsg (msg) {
     return {
-        username : msg['username'],
+        nickname : msg['nickname'],
         msg : msg['msg'],
         timestamp : Date.now()
     }
 }
 
-function addUser(username) {
+function addUser(nickname) {
     return {
-        username : users.includes(username) ? username : generateUsername(),
+        nickname : users.includes(nickname) ? nickname : generateNickname(),
         msgHistory : msgHistory
     }
 }
 
-function generateUsername() {
+function changeNickname(nicknames) {
+    let index = users.findIndex(name => name === nicknames['oldNickname']);
+    users.splice(index, 1);
+    users.push(nicknames['newNickname']);
+    console.log('nickname changed: ', users);
+    return {
+        newNickname: users[users.length-1]
+    };
+}
+
+function generateNickname() {
     users.push('User' + (users.length + 1));
     return users[users.length-1];
 }
