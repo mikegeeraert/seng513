@@ -30,24 +30,28 @@ $(function() {
     }
 
     function changeNickname(newNickname) {
-        let nicknames = {
+        let deltaNickname = {
             oldNickname : findNickname(),
             newNickname : newNickname
         };
-        socket.emit('changeNickname', nicknames, response => handleResponse(response));
+        socket.emit('changeNickname', deltaNickname, response => handleResponse(response));
 
         function handleResponse(response) {
             console.log(response);
             if (response['err'] !== undefined ) {
-                let errorDisplay = '';
+                let errorText = '';
                 switch (response['err']) {
                     case 'collision':
-                        errorDisplay = 'Oops, someone already has that nickname!';
+                        errorText = 'Oops, someone already has that nickname!';
+                        break;
+                    case 'no-change':
+                        errorText = 'Oops, you already have this nickname!';
                         break;
                     default:
-                        errorDisplay = 'There was an error that we did not expect. Please try again differently.';
+                        errorText = 'There was an error that we did not expect. Please try again differently.';
                         break;
                 }
+                displayErrorToast(errorText);
             }
             else {
                 Cookies.set('nickname', response['newNickname']);
@@ -89,14 +93,21 @@ $(function() {
     }
 
     function displayChatMessage(msg) {
+    // <li class="mdl-list__item">
+    //         <span class="mdl-list__item-primary-content">
+    //         <i class="material-icons mdl-list__item-icon">person</i>
+    //     Aaron Paul
+    //     </span>
+    //     </li>
         let item = $('<li></li>');
-        let nickname = $('<div></div>').text(msg['nickname']);
+        let nameChip = $("<span class=\"mdl-chip\"><span class=\"mdl-chip__text\">" + msg.nickname + "</span></span>");
+        // let nickname = $('<div></div>').text(msg['nickname']);
         let timestamp = new Date(msg['timestamp']);
         let localeOptions = {hour: 'numeric', minute: 'numeric'};
-        let timeSent = $('<div></div>').text(timestamp.toLocaleTimeString('en-US', localeOptions));
+        let timeSent = $('<span></span>').text(timestamp.toLocaleTimeString('en-US', localeOptions));
         let message = $('<div></div>').text(msg['msg']);
 
-        item.append(nickname, timeSent, message);
+        item.append(nameChip, timeSent, message);
         $('#messages').append(item);
 
     }
@@ -108,3 +119,12 @@ $(function() {
         $('#messages').append(item);
     }
 });
+
+function displayErrorToast (errorText) {
+    var notification = document.querySelector('#error-toast');
+    notification.MaterialSnackbar.showSnackbar(
+        {
+            message: errorText
+        }
+    );
+}

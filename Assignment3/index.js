@@ -15,19 +15,22 @@ app.use(express.static(__dirname + '/public'));
 
 // listen to messages
 io.on('connection', socket => {
+
     socket.on('chat', function(msg){
         msgHistory.push(buildChatMsg(msg));
 	    io.emit('chat', msgHistory[msgHistory.length-1]);
     });
+
     socket.on('newUser', (nickname, callbackFn) => {
-        callbackFn(addUser(nickname));
+        callbackFn(addUserAndShareHistory(nickname));
         console.log('New User has entered the arena', users);
     });
-    socket.on('changeNickname', (nicknames, callbackFn) => {
-        let result  = changeNickname(nicknames);
+
+    socket.on('changeNickname', (deltaNickname, callbackFn) => {
+        let result  = changeNickname(deltaNickname);
         if (result['err'] === undefined) {
             msgHistory.push(buildChangedNicknameMsg(result));
-            io.emit('changedNickname', nicknames);
+            io.emit('changedNickname', deltaNickname);
         }
         callbackFn(result);
     });
@@ -50,26 +53,22 @@ function buildChangedNicknameMsg (msg) {
     }
 }
 
-function addUser(nickname) {
+function addUserAndShareHistory(nickname) {
     return {
         nickname : users.includes(nickname) ? nickname : generateNickname(),
         msgHistory : msgHistory
     }
 }
 
-function changeNickname(nicknames) {
-    let existingIndex = users.findIndex(name => name === nicknames['oldNickname']);
-    let nameAlreadyExists = users.find(name => name === nicknames['newNickname']);
-    if (nameAlreadyExists) {
-        console.log('Name Already exists, returning an error to client');
-        return {
-            err: 'collision'
-        }
-    }
+function changeNickname(deltaNickname) {
+    let existingIndex = users.findIndex(name => name === deltaNickname.oldNickname);
+    let nameAlreadyExists = users.find(name => name === deltaNickname.newNickname);
+    if (deltaNickname.oldNickname === deltaNickname.newNickname) return {err: 'no-change'};
+    else if (nameAlreadyExists) return {err: 'collision'};
     else {
-        users.splice(existingIndex, 1, nicknames['newNickname']);
+        users.splice(existingIndex, 1, deltaNickname['newNickname']);
         console.log('nickname changed: ', users);
-        return nicknames;
+        return deltaNickname;
     }
 }
 
