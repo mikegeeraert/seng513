@@ -9,7 +9,8 @@ $(function() {
 	    $('#m').val('');
 	    return false;
     });
-    socket.on('chat', msg => displayMessage(msg));
+    socket.on('chat', msg => displayChatMessage(msg));
+    socket.on('changedNickname', msg => displayChangedNickname(msg));
 
     function determineAction(input) {
         let command  = input.split(' ')[0];
@@ -36,14 +37,23 @@ $(function() {
         socket.emit('changeNickname', nicknames, response => handleResponse(response));
 
         function handleResponse(response) {
-            let oldNickname = Cookies.get('nickname');
-            let newNickname = response['newNickname'];
-            Cookies.set('nickname', newNickname);
-            let item = $('<li></li>').text(oldNickname + ' changed their nickname to ' + newNickname);
-            $('#messages').append(item);
+            console.log(response);
+            if (response['err'] !== undefined ) {
+                let errorDisplay = '';
+                switch (response['err']) {
+                    case 'collision':
+                        errorDisplay = 'Oops, someone already has that nickname!';
+                        break;
+                    default:
+                        errorDisplay = 'There was an error that we did not expect. Please try again differently.';
+                        break;
+                }
+            }
+            else {
+                Cookies.set('nickname', response['newNickname']);
+            }
         }
     }
-
 
     function changeColor(input) {
 
@@ -65,9 +75,20 @@ $(function() {
         console.log(response);
         Cookies.set('nickname', response['nickname']);
         response['msgHistory'].forEach(msg => displayMessage(msg));
+
+        function displayMessage(msg) {
+            switch(msg.type){
+                case 'chat':
+                    displayChatMessage(msg);
+                    break;
+                case 'changedNickname':
+                    displayChangedNickname(msg);
+                    break;
+            }
+        }
     }
 
-    function displayMessage(msg) {
+    function displayChatMessage(msg) {
         let item = $('<li></li>');
         let nickname = $('<div></div>').text(msg['nickname']);
         let timestamp = new Date(msg['timestamp']);
@@ -78,5 +99,12 @@ $(function() {
         item.append(nickname, timeSent, message);
         $('#messages').append(item);
 
+    }
+
+    function displayChangedNickname(msg) {
+        let oldNickname = msg['oldNickname'];
+        let newNickname = msg['newNickname'];
+        let item = $('<li></li>').text(oldNickname + ' changed their nickname to ' + newNickname);
+        $('#messages').append(item);
     }
 });

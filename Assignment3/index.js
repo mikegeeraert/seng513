@@ -13,10 +13,10 @@ http.listen( port, function () {
 
 app.use(express.static(__dirname + '/public'));
 
-// listen to 'chat' messages
+// listen to messages
 io.on('connection', socket => {
     socket.on('chat', function(msg){
-        msgHistory.push(buildMsg(msg));
+        msgHistory.push(buildChatMsg(msg));
 	    io.emit('chat', msgHistory[msgHistory.length-1]);
     });
     socket.on('newUser', (nickname, callbackFn) => {
@@ -24,15 +24,29 @@ io.on('connection', socket => {
         console.log('New User has entered the arena', users);
     });
     socket.on('changeNickname', (nicknames, callbackFn) => {
-        callbackFn(changeNickname(nicknames));
+        let result  = changeNickname(nicknames);
+        if (result['err'] === undefined) {
+            msgHistory.push(buildChangedNicknameMsg(result));
+            io.emit('changedNickname', nicknames);
+        }
+        callbackFn(result);
     });
 });
 
-function buildMsg (msg) {
+function buildChatMsg (msg) {
     return {
+        type : 'chat',
         nickname : msg['nickname'],
         msg : msg['msg'],
         timestamp : Date.now()
+    }
+}
+
+function buildChangedNicknameMsg (msg) {
+    return {
+        type : 'changedNickname',
+        oldNickname: msg['oldNickname'],
+        newNickname: msg.newNickname
     }
 }
 
@@ -44,13 +58,19 @@ function addUser(nickname) {
 }
 
 function changeNickname(nicknames) {
-    let index = users.findIndex(name => name === nicknames['oldNickname']);
-    users.splice(index, 1);
-    users.push(nicknames['newNickname']);
-    console.log('nickname changed: ', users);
-    return {
-        newNickname: users[users.length-1]
-    };
+    let existingIndex = users.findIndex(name => name === nicknames['oldNickname']);
+    let nameAlreadyExists = users.find(name => name === nicknames['newNickname']);
+    if (nameAlreadyExists) {
+        console.log('Name Already exists, returning an error to client');
+        return {
+            err: 'collision'
+        }
+    }
+    else {
+        users.splice(existingIndex, 1, nicknames['newNickname']);
+        console.log('nickname changed: ', users);
+        return nicknames;
+    }
 }
 
 function generateNickname() {
