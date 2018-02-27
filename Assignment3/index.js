@@ -6,6 +6,7 @@ const rp = require('request-promise');
 let port = process.env.PORT || 3000;
 
 
+const AvailableUserColors = ['red', 'pink', 'purple', 'deep-purple', 'indigo', 'blue', 'light-blue', 'cyan', 'teal', 'green', 'light-green', 'lime', 'yellow', 'amber', 'orange', 'deep-orange', 'brown', 'grey', 'blue-grey', 'black'];
 let msgHistory = [];
 let users = [];
 http.listen( port, function () {
@@ -44,12 +45,18 @@ io.on('connection', socket => {
         }
         callbackFn(result);
     });
+
+    socket.on('changeColor', (deltaColor, callbackFn) => {
+        let result = changeColor(deltaColor);
+        callbackFn(result);
+    })
 });
 
 function buildChatMsg (msg) {
     return {
         type : 'chat',
         nickname : msg.nickname,
+        color : users.find(user => user.nickname === msg.nickname).color,
         msg : msg.msg,
         timestamp : Date.now()
     }
@@ -71,25 +78,41 @@ function buildNewUserMsg (nickname) {
 }
 
 async function addUserAndShareHistory(nickname) {
-    nickname = users.includes(nickname) ? nickname : await getNickname().catch(err => console.log(err)); ;
-    users.push(nickname);
+    let existingUser = users.find(user => user.nickname === nickname);
+    nickname = existingUser ? nickname : await getNickname().catch(err => console.log(err));
+    let color = existingUser ? existingUser.color : 'cyan';
+    users.push({nickname: nickname, color : color});
     return {
         nickname :  nickname,
+        color : color ,
         msgHistory : msgHistory
     }
 }
 
 function changeNickname(deltaNickname) {
     let result = {};
-    let existingIndex = users.findIndex(name => name === deltaNickname.oldNickname);
-    let nameAlreadyExists = users.includes(deltaNickname.newNickname);
+    let existingIndex = users.findIndex(user => user.nickname === deltaNickname.oldNickname);
+    let nameAlreadyExists = users.find(user => user.nickname === deltaNickname.newNickname);
 
     if (deltaNickname.oldNickname === deltaNickname.newNickname) result = {err: 'no-change'};
     else if (nameAlreadyExists) result =  {err: 'collision'};
     else {
-        users.splice(existingIndex, 1, deltaNickname.newNickname);
+        users[existingIndex].nickname = deltaNickname.newNickname;
         console.log('nickname changed: ', users);
         result = deltaNickname;
+    }
+    return result;
+}
+
+function changeColor(deltaColor) {
+    let result = {};
+    let userIndex = users.findIndex(user => user.nickname === deltaColor.nickname);
+
+    if (deltaColor.oldColor === deltaColor.newColor) result = { err: 'no-change' };
+    else if (!AvailableUserColors.includes(deltaColor.newColor)) result = {err: 'not-available'};
+    else {
+        users[userIndex].color = deltaColor.newColor;
+        result = deltaColor;
     }
     return result;
 }
@@ -112,7 +135,7 @@ function getNickname(optionalRetryCount) {
     return Promise.all([adjectivePromise, nounPromise])
         .then(results => {
         if (results[0] && results[1]) { nickname = results[0] + results[1] }
-        let nameAlreadyExists = users.includes(nickname);
+        let nameAlreadyExists = users.find(user => user.nickname === nickname);
         if (nameAlreadyExists){
             nickname = getNickname(optionalRetryCount + 1);
         }

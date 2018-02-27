@@ -64,8 +64,35 @@ $(function() {
         }
     }
 
-    function changeColor(input) {
+    function changeColor(newColor) {
+        let deltaColor = {
+            nickname : findNickname(),
+            oldColor : findColor(),
+            newColor : newColor
+        };
 
+        socket.emit('changeColor', deltaColor, response => handleResponse(response));
+
+        function handleResponse(response) {
+            let resultText = '';
+            if (response['err'] !== undefined ) {
+                switch (response['err']) {
+                    case 'no-change':
+                        resultText = 'Oops, you already have this color applied!';
+                        break;
+                    case 'not-available':
+                        resultText = 'Oh, sorry, that color is not available';
+                    default:
+                        resultText = 'There was an error that we did not expect. Please try again differently, and we will too.';
+                        break;
+                }
+            }
+            else {
+                Cookies.set('color', response.newColor);
+                resultText = 'There, your color should be different for all your new messages';
+            }
+            displayToast(resultText);
+        }
     }
 
     function buildChatMessage(msg) {
@@ -80,9 +107,15 @@ $(function() {
         return nickname !== undefined ? nickname : null;
     }
 
+    function findColor() {
+        let color = Cookies.get('color');
+        return color !== undefined ? color : null;
+    }
+
     function loadConversation(response) {
         console.log(response);
         Cookies.set('nickname', response['nickname']);
+        Cookies.set('color', response.color);
         response['msgHistory'].forEach(msg => displayMessage(msg));
 
         function displayMessage(msg) {
@@ -106,6 +139,7 @@ $(function() {
         let localeOptions = {hour: 'numeric', minute: 'numeric'};
         msg.timestamp = new Date(msg.timestamp).toLocaleTimeString('en-US', localeOptions);
         msg['firstLetter'] = msg.nickname.charAt(0).toUpperCase();
+        console.log(msg);
         $('#messages').append(chatTemplate(msg));
 
     }

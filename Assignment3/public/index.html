@@ -22,7 +22,7 @@
 <script type="text/template" id="chat_message">
   <li class="mdl-list__item">
     <span class="mdl-chip mdl-chip--contact">
-        <span class="mdl-chip__contact mdl-color--teal mdl-color-text--white"><%- rc.firstLetter %></span>
+        <span class="mdl-chip__contact mdl-color--<%- rc.color %> mdl-color-text--white"><%- rc.firstLetter %></span>
       <span class="mdl-chip__text"><b><%- rc.nickname %></b> at <%- rc.timestamp %> </span>
     </span>
     <%- rc.msg %>
