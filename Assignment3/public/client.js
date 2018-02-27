@@ -14,6 +14,7 @@ $(function() {
     });
     socket.on('chat', msg => displayChatMessage(msg));
     socket.on('changedNickname', msg => displayChangedNickname(msg));
+    socket.on('newUser', msg => displayNewUser(msg));
 
     function determineAction(input) {
         let command  = input.split(' ')[0];
@@ -54,10 +55,11 @@ $(function() {
                         errorText = 'There was an error that we did not expect. Please try again differently.';
                         break;
                 }
-                displayErrorToast(errorText);
+                displayToast(errorText);
             }
             else {
-                Cookies.set('nickname', response['newNickname']);
+                Cookies.set('nickname', response.newNickname);
+                displayToast('Great! You shall now be known as ' + response.newNickname);
             }
         }
     }
@@ -91,6 +93,11 @@ $(function() {
                 case 'changedNickname':
                     displayChangedNickname(msg);
                     break;
+                case 'newUser':
+                    displayNewUser(msg);
+                    break;
+                default:
+                    break;
             }
         }
     }
@@ -109,13 +116,18 @@ $(function() {
         let item = $('<li></li>').text(oldNickname + ' changed their nickname to ' + newNickname);
         $('#messages').append(item);
     }
+
+    function displayNewUser(msg) {
+        let item = $('<li></li>').text('Wowee, ' + msg.nickname + ' just joined the chat!');
+        $('#messages').append(item);
+    }
 });
 
-function displayErrorToast (errorText) {
+function displayToast (text) {
     var notification = document.querySelector('#error-toast');
     notification.MaterialSnackbar.showSnackbar(
         {
-            message: errorText
+            message: text
         }
     );
 }

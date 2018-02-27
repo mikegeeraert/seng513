@@ -30,6 +30,9 @@ io.on('connection', socket => {
         addUserAndShareHistory(nickname).then(message => {
             console.log('New User has entered the arena', users);
             callbackFn(message);
+            let newUserMessage = buildNewUserMsg(message.nickname);
+            msgHistory.push(newUserMessage);
+            io.emit('newUser', newUserMessage);
         });
     });
 
@@ -55,15 +58,20 @@ function buildChatMsg (msg) {
 function buildChangedNicknameMsg (msg) {
     return {
         type : 'changedNickname',
-        oldNickname: msg.oldNickname,
-        newNickname: msg.newNickname
+        oldNickname : msg.oldNickname,
+        newNickname : msg.newNickname
+    }
+}
+
+function buildNewUserMsg (nickname) {
+    return {
+        type : 'newUser',
+        nickname: nickname
     }
 }
 
 async function addUserAndShareHistory(nickname) {
-    let backupNickname = await getNickname().catch(err => console.log(err));
-    console.log(backupNickname);
-    nickname = users.includes(nickname) ? nickname : backupNickname ;
+    nickname = users.includes(nickname) ? nickname : await getNickname().catch(err => console.log(err)); ;
     users.push(nickname);
     return {
         nickname :  nickname,
@@ -74,7 +82,7 @@ async function addUserAndShareHistory(nickname) {
 function changeNickname(deltaNickname) {
     let result = {};
     let existingIndex = users.findIndex(name => name === deltaNickname.oldNickname);
-    let nameAlreadyExists = users.find(name => name === deltaNickname.newNickname);
+    let nameAlreadyExists = users.includes(deltaNickname.newNickname);
 
     if (deltaNickname.oldNickname === deltaNickname.newNickname) result = {err: 'no-change'};
     else if (nameAlreadyExists) result =  {err: 'collision'};
@@ -104,7 +112,7 @@ function getNickname(optionalRetryCount) {
     return Promise.all([adjectivePromise, nounPromise])
         .then(results => {
         if (results[0] && results[1]) { nickname = results[0] + results[1] }
-        let nameAlreadyExists = users.find(name => name === nickname);
+        let nameAlreadyExists = users.includes(nickname);
         if (nameAlreadyExists){
             nickname = getNickname(optionalRetryCount + 1);
         }
