@@ -11,7 +11,9 @@ http.listen( port, function () {
     console.log('listening on port', port);
 });
 
+//obscure server directory structure by using this alias for scripts
 app.use('/scripts/', express.static(__dirname + '/node_modules/'));
+//serve index.html from public directory
 app.use(express.static(__dirname + '/public'));
 
 
@@ -41,8 +43,8 @@ io.on('connection', socket => {
 function buildChatMsg (msg) {
     return {
         type : 'chat',
-        nickname : msg['nickname'],
-        msg : msg['msg'],
+        nickname : msg.nickname,
+        msg : msg.msg,
         timestamp : Date.now()
     }
 }
@@ -50,7 +52,7 @@ function buildChatMsg (msg) {
 function buildChangedNicknameMsg (msg) {
     return {
         type : 'changedNickname',
-        oldNickname: msg['oldNickname'],
+        oldNickname: msg.oldNickname,
         newNickname: msg.newNickname
     }
 }
@@ -63,15 +65,18 @@ function addUserAndShareHistory(nickname) {
 }
 
 function changeNickname(deltaNickname) {
+    let result = {};
     let existingIndex = users.findIndex(name => name === deltaNickname.oldNickname);
     let nameAlreadyExists = users.find(name => name === deltaNickname.newNickname);
-    if (deltaNickname.oldNickname === deltaNickname.newNickname) return {err: 'no-change'};
-    else if (nameAlreadyExists) return {err: 'collision'};
+
+    if (deltaNickname.oldNickname === deltaNickname.newNickname) result = {err: 'no-change'};
+    else if (nameAlreadyExists) result =  {err: 'collision'};
     else {
-        users.splice(existingIndex, 1, deltaNickname['newNickname']);
+        users.splice(existingIndex, 1, deltaNickname.newNickname);
         console.log('nickname changed: ', users);
-        return deltaNickname;
+        result = deltaNickname;
     }
+    return result;
 }
 
 function generateNickname() {
