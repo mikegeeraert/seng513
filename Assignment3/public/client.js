@@ -1,6 +1,9 @@
 $(function() {
     let socket = io();
 
+    _.templateSettings.variable = "rc";
+    var chatTemplate = _.template($('#chat_message').html());
+
     socket.emit('newUser', findNickname(), response => loadConversation(response));
 
     $('form').submit(function(){
@@ -93,22 +96,10 @@ $(function() {
     }
 
     function displayChatMessage(msg) {
-    // <li class="mdl-list__item">
-    //         <span class="mdl-list__item-primary-content">
-    //         <i class="material-icons mdl-list__item-icon">person</i>
-    //     Aaron Paul
-    //     </span>
-    //     </li>
-        let item = $('<li></li>');
-        let nameChip = $("<span class=\"mdl-chip\"><span class=\"mdl-chip__text\">" + msg.nickname + "</span></span>");
-        // let nickname = $('<div></div>').text(msg['nickname']);
-        let timestamp = new Date(msg['timestamp']);
         let localeOptions = {hour: 'numeric', minute: 'numeric'};
-        let timeSent = $('<span></span>').text(timestamp.toLocaleTimeString('en-US', localeOptions));
-        let message = $('<div></div>').text(msg['msg']);
-
-        item.append(nameChip, timeSent, message);
-        $('#messages').append(item);
+        msg.timestamp = new Date(msg.timestamp).toLocaleTimeString('en-US', localeOptions);
+        msg['firstLetter'] = msg.nickname.charAt(0).toUpperCase();
+        $('#messages').append(chatTemplate(msg));
 
     }
 

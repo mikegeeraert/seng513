@@ -3,6 +3,8 @@
   <head>
     <title>CREAM (Chat Rules Everything Around Me)</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" type="text/css">
+
   </head>
   <body>
     <ul id="messages"></ul>
@@ -13,17 +15,28 @@
       <div class="mdl-snackbar__text"></div>
       <button class="mdl-snackbar__action" type="button"></button>
     </div>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
-    <script
-       src="https://code.jquery.com/jquery-3.1.1.min.js"
-       integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
-       crossorigin="anonymous"></script>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="/underscore/underscore.js"></script>
-    <script src="/client.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
-    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
-
   </body>
 </html>
+
+
+<script type="text/template" id="chat_message">
+  <li class="mdl-list__item">
+    <span class="mdl-chip mdl-chip--contact">
+        <span class="mdl-chip__contact mdl-color--teal mdl-color-text--white"><%- rc.firstLetter %></span>
+      <span class="mdl-chip__text"><b><%- rc.nickname %></b> at <%- rc.timestamp %> </span>
+    </span>
+    <%- rc.msg %>
+  </li>
+</script>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+<script
+        src="https://code.jquery.com/jquery-3.1.1.min.js"
+        integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+        crossorigin="anonymous"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/scripts/underscore/underscore.js"></script>
+<script src="/client.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+<script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>

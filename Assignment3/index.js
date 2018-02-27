@@ -11,7 +11,9 @@ http.listen( port, function () {
     console.log('listening on port', port);
 });
 
+app.use('/scripts/', express.static(__dirname + '/node_modules/'));
 app.use(express.static(__dirname + '/public'));
+
 
 // listen to messages
 io.on('connection', socket => {
