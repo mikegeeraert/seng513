@@ -2,6 +2,7 @@ let express = require('express');
 let app = express();
 let http = require('http').createServer(app);
 let io = require('socket.io')(http);
+const rp = require('request-promise');
 let port = process.env.PORT || 3000;
 
 
@@ -26,8 +27,10 @@ io.on('connection', socket => {
     });
 
     socket.on('newUser', (nickname, callbackFn) => {
-        callbackFn(addUserAndShareHistory(nickname));
-        console.log('New User has entered the arena', users);
+        addUserAndShareHistory(nickname).then(message => {
+            console.log('New User has entered the arena', users);
+            callbackFn(message);
+        });
     });
 
     socket.on('changeNickname', (deltaNickname, callbackFn) => {
@@ -57,9 +60,13 @@ function buildChangedNicknameMsg (msg) {
     }
 }
 
-function addUserAndShareHistory(nickname) {
+async function addUserAndShareHistory(nickname) {
+    let backupNickname = await getNickname().catch(err => console.log(err));
+    console.log(backupNickname);
+    nickname = users.includes(nickname) ? nickname : backupNickname ;
+    users.push(nickname);
     return {
-        nickname : users.includes(nickname) ? nickname : generateNickname(),
+        nickname :  nickname,
         msgHistory : msgHistory
     }
 }
@@ -79,7 +86,28 @@ function changeNickname(deltaNickname) {
     return result;
 }
 
-function generateNickname() {
-    users.push('User' + (users.length + 1));
-    return users[users.length-1];
+const randomNounRequestURL = 'http://api.wordnik.com:80/v4/words.json/randomWord?hasDictionaryDef=true&includePartOfSpeech=proper-noun&excludePartOfSpeech=noun-plural&minCorpusCount=4500&maxCorpusCount=-1&minDictionaryCount=1&maxDictionaryCount=-1&minLength=5&maxLength=-1&api_key=a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5';
+const randomAdjectiveRequestURL = 'http://api.wordnik.com:80/v4/words.json/randomWord?hasDictionaryDef=true&includePartOfSpeech=adjective&excludePartOfSpeech=noun-plural&minCorpusCount=4500&maxCorpusCount=-1&minDictionaryCount=1&maxDictionaryCount=-1&minLength=5&maxLength=-1&api_key=a2a73e7b926c924fad7001ca3111acd55af2ffabf50eb4ae5';
+function getNickname(optionalRetryCount) {
+
+    //default to using generic "User{n}" nicknames if the word requests fail
+    optionalRetryCount = optionalRetryCount || 0;
+    let nickname = 'User' + (users.length + 1 + optionalRetryCount);
+
+    let adjectivePromise = rp({uri: randomAdjectiveRequestURL, json: true})
+        .then( body => { return body.word })
+        .catch( err => { console.log(err) });
+    let nounPromise = rp({uri: randomNounRequestURL, json: true})
+        .then( body => { return body.word })
+        .catch( err => { console.log(err) });
+
+    return Promise.all([adjectivePromise, nounPromise])
+        .then(results => {
+        if (results[0] && results[1]) { nickname = results[0] + results[1] }
+        let nameAlreadyExists = users.find(name => name === nickname);
+        if (nameAlreadyExists){
+            nickname = getNickname(optionalRetryCount + 1);
+        }
+        return nickname;
+    });
 }
