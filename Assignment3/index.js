@@ -8,7 +8,7 @@ let port = process.env.PORT || 3000;
 
 const AvailableUserColors = ['red', 'pink', 'purple', 'deep-purple', 'indigo', 'blue', 'light-blue', 'cyan', 'teal', 'green', 'light-green', 'lime', 'yellow', 'amber', 'orange', 'deep-orange', 'brown', 'grey', 'blue-grey', 'black'];
 let msgHistory = [];
-let users = [];
+let users = {};
 http.listen( port, function () {
     console.log('listening on port', port);
 });
@@ -23,22 +23,26 @@ app.use(express.static(__dirname + '/public'));
 io.on('connection', socket => {
 
     socket.on('chat', function(msg){
-        msgHistory.push(buildChatMsg(msg));
+        msgHistory.push(buildChatMsg(msg, socket.id));
 	    io.emit('chat', msgHistory[msgHistory.length-1]);
     });
 
-    socket.on('newUser', (nickname, callbackFn) => {
-        addUserAndShareHistory(nickname).then(message => {
+    socket.on('newUser', (userCookieVals, callbackFn) => {
+        addUser(userCookieVals, socket.id).then(user => {
             console.log('New User has entered the arena', users);
-            callbackFn(message);
-            let newUserMessage = buildNewUserMsg(message.nickname);
+            let result = {
+                user : user,
+                msgHistory : msgHistory
+            };
+            callbackFn(result);
+            let newUserMessage = buildNewUserMsg(user.nickname);
             msgHistory.push(newUserMessage);
             io.emit('newUser', newUserMessage);
         });
     });
 
     socket.on('changeNickname', (deltaNickname, callbackFn) => {
-        let result  = changeNickname(deltaNickname);
+        let result  = changeNickname(deltaNickname, socket.id);
         if (result['err'] === undefined) {
             msgHistory.push(buildChangedNicknameMsg(result));
             io.emit('changedNickname', deltaNickname);
@@ -47,16 +51,23 @@ io.on('connection', socket => {
     });
 
     socket.on('changeColor', (deltaColor, callbackFn) => {
-        let result = changeColor(deltaColor);
+        let result = changeColor(deltaColor, socket.id);
         callbackFn(result);
-    })
+    });
+
+    socket.on('disconnect', () => {
+        let user = Boolean(users[socket.id]) ? users[socket.id] : { nickname:'unknown user' } ;
+        removeUser(socket.id);
+        msgHistory.push(buildUserDisconnectedMsg(user.nickname));
+        socket.emit('userDisconnected', user.nickname);
+    });
 });
 
-function buildChatMsg (msg) {
+function buildChatMsg (msg, socketId) {
     return {
         type : 'chat',
         nickname : msg.nickname,
-        color : users.find(user => user.nickname === msg.nickname).color,
+        color : users[socketId].color,
         msg : msg.msg,
         timestamp : Date.now()
     }
@@ -73,45 +84,52 @@ function buildChangedNicknameMsg (msg) {
 function buildNewUserMsg (nickname) {
     return {
         type : 'newUser',
-        nickname: nickname
+        nickname : nickname
     }
 }
 
-async function addUserAndShareHistory(nickname) {
-    let existingUser = users.find(user => user.nickname === nickname);
-    nickname = existingUser ? nickname : await getNickname().catch(err => console.log(err));
-    let color = existingUser ? existingUser.color : 'cyan';
-    users.push({nickname: nickname, color : color});
+function buildUserDisconnectedMsg (nickname) {
     return {
-        nickname :  nickname,
-        color : color ,
-        msgHistory : msgHistory
+        type : 'userDisconnected',
+        nickname : nickname
     }
 }
 
-function changeNickname(deltaNickname) {
-    let result = {};
-    let existingIndex = users.findIndex(user => user.nickname === deltaNickname.oldNickname);
-    let nameAlreadyExists = users.find(user => user.nickname === deltaNickname.newNickname);
+async function addUser(UserCookieVals, socketID) {
+    let user = {
+        nickname : UserCookieVals.nickname || await getNickname().catch(err => console.log(err)),
+        color : UserCookieVals.color || 'cyan'
+    };
+    users[socketID] = user;
+    return user;
+}
 
-    if (deltaNickname.oldNickname === deltaNickname.newNickname) result = {err: 'no-change'};
-    else if (nameAlreadyExists) result =  {err: 'collision'};
+function removeUser(socketID) {
+    delete users[socketID];
+}
+
+function changeNickname(deltaNickname, socketId) {
+    let result = {};
+    let user = users[socketId];
+    if (!Boolean(user)) result = {err: 'user-not-found'};
+    else if (deltaNickname.oldNickname === deltaNickname.newNickname) result = {err: 'no-change'};
+    else if (nameAlreadyExists(deltaNickname.newNickname)) result =  {err: 'collision'};
     else {
-        users[existingIndex].nickname = deltaNickname.newNickname;
+        users[socketId].nickname = deltaNickname.newNickname;
         console.log('nickname changed: ', users);
         result = deltaNickname;
     }
     return result;
 }
 
-function changeColor(deltaColor) {
+function changeColor(deltaColor, socketId) {
     let result = {};
-    let userIndex = users.findIndex(user => user.nickname === deltaColor.nickname);
-
-    if (deltaColor.oldColor === deltaColor.newColor) result = { err: 'no-change' };
+    let user = users[socketId];
+    if (!Boolean(user)) result = {err: 'user-not-found'};
+    else if (deltaColor.oldColor === deltaColor.newColor) result = { err: 'no-change' };
     else if (!AvailableUserColors.includes(deltaColor.newColor)) result = {err: 'not-available'};
     else {
-        users[userIndex].color = deltaColor.newColor;
+        users[socketId].color = deltaColor.newColor;
         result = deltaColor;
     }
     return result;
@@ -135,10 +153,16 @@ function getNickname(optionalRetryCount) {
     return Promise.all([adjectivePromise, nounPromise])
         .then(results => {
         if (results[0] && results[1]) { nickname = results[0] + results[1] }
-        let nameAlreadyExists = users.find(user => user.nickname === nickname);
-        if (nameAlreadyExists){
+        if (nameAlreadyExists(nickname)){
             nickname = getNickname(optionalRetryCount + 1);
         }
         return nickname;
     });
+}
+
+function nameAlreadyExists(nickname) {
+    for (let user in users) {
+        if (user.nickname === nickname) return frue;
+    }
+    return false;
 }

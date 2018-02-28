@@ -4,7 +4,11 @@ $(function() {
     _.templateSettings.variable = "rc";
     var chatTemplate = _.template($('#chat_message').html());
 
-    socket.emit('newUser', findNickname(), response => loadConversation(response));
+    let userCookieVals = {
+        nickname : findNickname(),
+        color : findColor()
+    };
+    socket.emit('newUser', userCookieVals, response => loadConversation(response));
 
     $('form').submit(function(){
         let input = $('#m').val();
@@ -15,6 +19,7 @@ $(function() {
     socket.on('chat', msg => displayChatMessage(msg));
     socket.on('changedNickname', msg => displayChangedNickname(msg));
     socket.on('newUser', msg => displayNewUser(msg));
+    socket.on('userDisconnected', msg => displayUserDisconnected(msg));
 
     function determineAction(input) {
         let command  = input.split(' ')[0];
@@ -113,10 +118,9 @@ $(function() {
     }
 
     function loadConversation(response) {
-        console.log(response);
-        Cookies.set('nickname', response['nickname']);
-        Cookies.set('color', response.color);
-        response['msgHistory'].forEach(msg => displayMessage(msg));
+        Cookies.set('nickname', response.user.nickname);
+        Cookies.set('color', response.user.color);
+        response.msgHistory.forEach(msg => displayMessage(msg));
 
         function displayMessage(msg) {
             switch(msg.type){
@@ -129,6 +133,8 @@ $(function() {
                 case 'newUser':
                     displayNewUser(msg);
                     break;
+                case 'userDisconnected':
+                    displayUserDisconnected(msg);
                 default:
                     break;
             }
@@ -152,7 +158,12 @@ $(function() {
     }
 
     function displayNewUser(msg) {
-        let item = $('<li></li>').text('Wowee, ' + msg.nickname + ' just joined the chat!');
+        let item = $('<li></li>').text(msg.nickname + ' joined the chat!');
+        $('#messages').append(item);
+    }
+
+    function displayUserDisconnected(msg) {
+        let item = $('<li></li>').text(msg.nickname + ' left the chat');
         $('#messages').append(item);
     }
 });
