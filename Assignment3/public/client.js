@@ -169,7 +169,7 @@ $(function() {
 });
 
 function displayToast (text) {
-    var notification = document.querySelector('#error-toast');
+    let notification = document.querySelector('#error-toast');
     notification.MaterialSnackbar.showSnackbar(
         {
             message: text

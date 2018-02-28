@@ -7,28 +7,37 @@
 
   </head>
   <body>
+  <div class="container">
     <div class="chat-window">
-      <ul id="messages"></ul>
+      <div id="messages">
+      </div>
     </div>
-    <form action="">
-      <input id="m" autocomplete="off" /><button>Send</button>
-    </form>
-    <div id="error-toast" class="mdl-js-snackbar mdl-snackbar">
-      <div class="mdl-snackbar__text"></div>
-      <button class="mdl-snackbar__action" type="button"></button>
+    <div class="users-window">
+      <div class="users-title"><h2>Currently Online</h2></div>
     </div>
+  </div>
+  <form action="#">
+    <div class="mdl-textfield mdl-js-textfield">
+      <input class="mdl-textfield__input" type="text" id="m">
+      <label class="mdl-textfield__label" for="m">Chat, or use /nick, /nickcolor to change your settings</label>
+    </div>
+  </form>
+  <div id="error-toast" class="mdl-js-snackbar mdl-snackbar">
+    <div class="mdl-snackbar__text"></div>
+    <button class="mdl-snackbar__action" type="button"></button>
+  </div>
   </body>
 </html>
 
 
 <script type="text/template" id="chat_message">
-  <li class="mdl-list__item">
+  <div>
     <span class="mdl-chip mdl-chip--contact">
         <span class="mdl-chip__contact mdl-color--<%- rc.color %> mdl-color-text--white"><%- rc.firstLetter %></span>
       <span class="mdl-chip__text"><b><%- rc.nickname %></b> at <%- rc.timestamp %> </span>
     </span>
     <%- rc.msg %>
-  </li>
+  </div>
 </script>
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
