@@ -3,6 +3,9 @@ $(function() {
 
     _.templateSettings.variable = "rc";
     var chatTemplate = _.template($('#chat_message').html());
+    var userTemplate = _.template($('#user').html());
+    var activityTemplate = _.template($('#activity_message').html());
+    let users = [];
 
     let userCookieVals = {
         nickname : findNickname(),
@@ -20,6 +23,7 @@ $(function() {
     socket.on('changedNickname', msg => displayChangedNickname(msg));
     socket.on('newUser', msg => displayNewUser(msg));
     socket.on('userDisconnected', msg => displayUserDisconnected(msg));
+    socket.on('userChange', msg => updateUserList(msg));
 
     function determineAction(input) {
         let command  = input.split(' ')[0];
@@ -120,6 +124,8 @@ $(function() {
     function loadConversation(response) {
         Cookies.set('nickname', response.user.nickname);
         Cookies.set('color', response.user.color);
+        users = response.allUsers;
+        users.forEach(user => displayUser(user));
         response.msgHistory.forEach(msg => displayMessage(msg));
 
         function displayMessage(msg) {
@@ -141,6 +147,11 @@ $(function() {
         }
     }
 
+    function displayUser(user) {
+        user['firstLetter'] = user.nickname.charAt(0).toUpperCase();
+        $('#users').append(userTemplate(user));
+    }
+
     function displayChatMessage(msg) {
         let localeOptions = {hour: 'numeric', minute: 'numeric'};
         msg.timestamp = new Date(msg.timestamp).toLocaleTimeString('en-US', localeOptions);
@@ -153,18 +164,42 @@ $(function() {
     function displayChangedNickname(msg) {
         let oldNickname = msg['oldNickname'];
         let newNickname = msg['newNickname'];
-        let item = $('<li></li>').text(oldNickname + ' changed their nickname to ' + newNickname);
-        $('#messages').append(item);
+        let text = oldNickname + ' changed their nickname to ' + newNickname;
+        $('#messages').append(activityTemplate({text:text}));
     }
 
     function displayNewUser(msg) {
-        let item = $('<li></li>').text(msg.nickname + ' joined the chat!');
-        $('#messages').append(item);
+        let text = msg.nickname + ' joined the chat!';
+        $('#messages').append(activityTemplate({text:text}));
     }
 
     function displayUserDisconnected(msg) {
-        let item = $('<li></li>').text(msg.nickname + ' left the chat');
-        $('#messages').append(item);
+        let text = msg.nickname + ' left the chat';
+        $('#messages').append(activityTemplate({text:text}));
+    }
+
+    function updateUserList(msg) {
+        console.log(msg);
+        console.log('Users Before', users);
+        switch(msg.action) {
+            case 'add':
+                users.push(msg.user);
+                break;
+            case 'remove':
+                let removeIndex = users.indexOf(msg.user);
+                if (removeIndex > -1) { users.splice(removeIndex, 1)}
+                break;
+            case 'update':
+                let updateIndex = users.indexOf(msg.oldUser);
+                if (updateIndex > -1) { users.splice(updateIndex, 1, msg.user)}
+                break;
+
+        }
+        console.log('Users After', users);
+        $('#users').empty();
+        users.forEach(user => displayUser(user));
+
+
     }
 });
 

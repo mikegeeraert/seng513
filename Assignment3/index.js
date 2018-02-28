@@ -32,27 +32,35 @@ io.on('connection', socket => {
             console.log('New User has entered the arena', users);
             let result = {
                 user : user,
+                allUsers: listUsers(),
                 msgHistory : msgHistory
             };
+            console.log(result);
             callbackFn(result);
             let newUserMessage = buildNewUserMsg(user.nickname);
             msgHistory.push(newUserMessage);
             io.emit('newUser', newUserMessage);
+            io.emit('userChange', buildUserChangeMsg(socket.id, 'add'));
         });
     });
 
     socket.on('changeNickname', (deltaNickname, callbackFn) => {
+        let oldUser = Object.assign(users[socket.id]);
         let result  = changeNickname(deltaNickname, socket.id);
         if (result['err'] === undefined) {
             msgHistory.push(buildChangedNicknameMsg(result));
             io.emit('changedNickname', deltaNickname);
+            io.emit('userChange', buildUserChangeMsg(socket.id, 'update', oldUser));
+
         }
         callbackFn(result);
     });
 
     socket.on('changeColor', (deltaColor, callbackFn) => {
+        let oldUser = Object.assign(users[socket.id]);
         let result = changeColor(deltaColor, socket.id);
         callbackFn(result);
+        io.emit('userChange', buildUserChangeMsg(socket.id, 'update', oldUser));
     });
 
     socket.on('disconnect', () => {
@@ -60,6 +68,7 @@ io.on('connection', socket => {
         removeUser(socket.id);
         msgHistory.push(buildUserDisconnectedMsg(user.nickname));
         socket.emit('userDisconnected', user.nickname);
+        io.emit('userChange', buildUserChangeMsg(socket.id, 'remove'));
     });
 });
 
@@ -85,6 +94,14 @@ function buildNewUserMsg (nickname) {
     return {
         type : 'newUser',
         nickname : nickname
+    }
+}
+
+function buildUserChangeMsg(socketId, action, oldUser) {
+    return {
+        action : action,
+        user : users[socketId],
+        oldUser : action === 'update' ? oldUser : null
     }
 }
 
@@ -165,4 +182,12 @@ function nameAlreadyExists(nickname) {
         if (user.nickname === nickname) return frue;
     }
     return false;
+}
+
+function listUsers() {
+    let userList = [];
+    for (let user in users) {
+        userList.push(users[user]);
+    }
+    return userList;
 }

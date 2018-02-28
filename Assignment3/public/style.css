@@ -1,8 +1,8 @@
 .container {
     font: 13px Helvetica, Arial;
     display: flex;
-    align-items: flex-end;
     flex-wrap: wrap;
+    align-items: stretch;
 }
 
 form {
@@ -13,17 +13,26 @@ form div.mdl-textfield {
     width: 100%
 }
 
-.title {
+.users-card.mdl-card {
     width: 100%;
+    margin: 20px;
 }
 
 .chat-window {
-    background-color: #CCCDD1;
     display: flex;
+    align-items: flex-end;
     flex-grow: 5;
+}
+
+.activity-message {
+    text-align: center;
 }
 
 .users-window {
     flex-grow: 1;
+    flex-wrap: wrap;
     min-width: 100px;
+    display: flex;
+    align-items: flex-start;
+    align-content: flex-start;
 }
