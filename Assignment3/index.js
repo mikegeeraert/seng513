@@ -35,17 +35,16 @@ io.on('connection', socket => {
                 allUsers: listUsers(),
                 msgHistory : msgHistory
             };
-            console.log(result);
             callbackFn(result);
             let newUserMessage = buildNewUserMsg(user.nickname);
             msgHistory.push(newUserMessage);
             io.emit('newUser', newUserMessage);
-            io.emit('userChange', buildUserChangeMsg(socket.id, 'add'));
+            socket.broadcast.emit('userChange', buildUserChangeMsg(socket.id, 'add'));
         });
     });
 
     socket.on('changeNickname', (deltaNickname, callbackFn) => {
-        let oldUser = Object.assign(users[socket.id]);
+        let oldUser = Object.assign({nickname: users[socket.id].nickname, color: users[socket.id].color});
         let result  = changeNickname(deltaNickname, socket.id);
         if (result['err'] === undefined) {
             msgHistory.push(buildChangedNicknameMsg(result));
@@ -65,10 +64,10 @@ io.on('connection', socket => {
 
     socket.on('disconnect', () => {
         let user = Boolean(users[socket.id]) ? users[socket.id] : { nickname:'unknown user' } ;
-        removeUser(socket.id);
         msgHistory.push(buildUserDisconnectedMsg(user.nickname));
         socket.emit('userDisconnected', user.nickname);
-        io.emit('userChange', buildUserChangeMsg(socket.id, 'remove'));
+        socket.broadcast.emit('userChange', buildUserChangeMsg(socket.id, 'remove'));
+        removeUser(socket.id);
     });
 });
 
@@ -133,7 +132,6 @@ function changeNickname(deltaNickname, socketId) {
     else if (nameAlreadyExists(deltaNickname.newNickname)) result =  {err: 'collision'};
     else {
         users[socketId].nickname = deltaNickname.newNickname;
-        console.log('nickname changed: ', users);
         result = deltaNickname;
     }
     return result;
@@ -179,7 +177,7 @@ function getNickname(optionalRetryCount) {
 
 function nameAlreadyExists(nickname) {
     for (let user in users) {
-        if (user.nickname === nickname) return frue;
+        if (users[user].nickname === nickname) return true;
     }
     return false;
 }

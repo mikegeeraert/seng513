@@ -149,7 +149,12 @@ $(function() {
 
     function displayUser(user) {
         user['firstLetter'] = user.nickname.charAt(0).toUpperCase();
-        $('#users').append(userTemplate(user));
+        if (user.nickname === findNickname()) {
+            $('#yourUser').append(userTemplate(user));
+        }
+        else {
+            $('#otherUsers').append(userTemplate(user));
+        }
     }
 
     function displayChatMessage(msg) {
@@ -186,11 +191,11 @@ $(function() {
                 users.push(msg.user);
                 break;
             case 'remove':
-                let removeIndex = users.indexOf(msg.user);
+                let removeIndex = users.findIndex(user => user.nickname === msg.user.nickname);
                 if (removeIndex > -1) { users.splice(removeIndex, 1)}
                 break;
             case 'update':
-                let updateIndex = users.indexOf(msg.oldUser);
+                let updateIndex = users.findIndex(user => user.nickname === msg.oldUser.nickname);
                 if (updateIndex > -1) { users.splice(updateIndex, 1, msg.user)}
                 break;
 
