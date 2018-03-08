@@ -3,14 +3,11 @@ $(function() {
 
     _.templateSettings.variable = "rc";
     var chatTemplate = _.template($('#chat_message').html());
-    var userTemplate = _.template($('#user').html());
+    var usersTemplate = _.template($('#users').html());
     var activityTemplate = _.template($('#activity_message').html());
     let users = [];
 
-    let userCookieVals = {
-        nickname : findNickname(),
-        color : findColor()
-    };
+    let userCookieVals = getUserInfo();
     socket.emit('newUser', userCookieVals, response => loadConversation(response));
 
     $('form').submit(function(){
@@ -43,8 +40,9 @@ $(function() {
     }
 
     function changeNickname(newNickname) {
+        let user = getUserInfo();
         let deltaNickname = {
-            oldNickname : findNickname(),
+            oldNickname : user.nickname,
             newNickname : newNickname
         };
         socket.emit('changeNickname', deltaNickname, response => handleResponse(response));
@@ -61,22 +59,24 @@ $(function() {
                         errorText = 'Oops, you already have this nickname!';
                         break;
                     default:
-                        errorText = 'There was an error that we did not expect. Please try again differently.';
+                        errorText = 'There was an error that we did not expect. Please try again, differently.';
                         break;
                 }
                 displayToast(errorText);
             }
             else {
-                Cookies.set('nickname', response.newNickname);
+                setUserInfo(response.newNickname, null);
+                displayUsers(users);
                 displayToast('Great! You shall now be known as ' + response.newNickname);
             }
         }
     }
 
     function changeColor(newColor) {
+        let user = getUserInfo();
         let deltaColor = {
-            nickname : findNickname(),
-            oldColor : findColor(),
+            nickname : user.nickname,
+            oldColor : user.color,
             newColor : newColor
         };
 
@@ -97,7 +97,8 @@ $(function() {
                 }
             }
             else {
-                Cookies.set('color', response.newColor);
+                setUserInfo(null, response.newColor);
+                displayUsers(users);
                 resultText = 'There, your color should be different for all your new messages';
             }
             displayToast(resultText);
@@ -106,26 +107,31 @@ $(function() {
 
     function buildChatMessage(msg) {
         return {
-            nickname: findNickname(),
+            nickname: getUserInfo().nickname,
             msg: msg
         }
     }
 
-    function findNickname() {
-        let nickname  = Cookies.get('nickname');
-        return nickname !== undefined ? nickname : null;
+    function setUserInfo(username, color) {
+        let currentUser = getUserInfo();
+        let updatedUser = {
+            nickname : username || currentUser.nickname || 'Unknown Name',
+            color : color || currentUser.color || 'grey'
+        };
+        let updateIndex = users.findIndex(user => user.nickname === currentUser.nickname);
+        if (updateIndex > -1) { users.splice(updateIndex, 1, updatedUser)}
+        Cookies.set('user', updatedUser);
     }
 
-    function findColor() {
-        let color = Cookies.get('color');
-        return color !== undefined ? color : null;
+    function getUserInfo() {
+        let user = Cookies.getJSON('user');
+        return user !== undefined ? user : {username: null, color: null};
     }
 
     function loadConversation(response) {
-        Cookies.set('nickname', response.user.nickname);
-        Cookies.set('color', response.user.color);
+        setUserInfo(response.user.nickname, response.user.color);
         users = response.allUsers;
-        users.forEach(user => displayUser(user));
+        displayUsers(users);
         response.msgHistory.forEach(msg => displayMessage(msg));
 
         function displayMessage(msg) {
@@ -147,14 +153,22 @@ $(function() {
         }
     }
 
-    function displayUser(user) {
-        user['firstLetter'] = user.nickname.charAt(0).toUpperCase();
-        if (user.nickname === findNickname()) {
-            $('#yourUser').append(userTemplate(user));
-        }
-        else {
-            $('#otherUsers').append(userTemplate(user));
-        }
+    function displayUsers(userList) {
+        $('#users-card').empty();
+        let thisUser = getUserInfo();
+        let otherUsers = new Set(userList);
+        otherUsers.forEach(user => {
+            if (user.nickname === thisUser.nickname) {
+                otherUsers.delete(user);
+            }
+        });
+        thisUser['firstLetter'] = thisUser.nickname.charAt(0).toUpperCase();
+        otherUsers.forEach(user => user['firstLetter'] = user.nickname.charAt(0).toUpperCase());
+        let usersForTemplate = {
+            thisUser : thisUser,
+            otherUsers : Array.from(otherUsers)
+        };
+        $('#users-card').append(usersTemplate(usersForTemplate));
     }
 
     function displayChatMessage(msg) {
@@ -196,13 +210,12 @@ $(function() {
                 break;
             case 'update':
                 let updateIndex = users.findIndex(user => user.nickname === msg.oldUser.nickname);
-                if (updateIndex > -1) { users.splice(updateIndex, 1, msg.user)}
+                if (updateIndex > -1) { users.splice(updateIndex, 1, msg.user)};
                 break;
 
         }
         console.log('Users After', users);
-        $('#users').empty();
-        users.forEach(user => displayUser(user));
+        displayUsers(users);
 
 
     }

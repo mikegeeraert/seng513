@@ -49,7 +49,7 @@ io.on('connection', socket => {
         if (result['err'] === undefined) {
             msgHistory.push(buildChangedNicknameMsg(result));
             io.emit('changedNickname', deltaNickname);
-            io.emit('userChange', buildUserChangeMsg(socket.id, 'update', oldUser));
+            socket.broadcast.emit('userChange', buildUserChangeMsg(socket.id, 'update', oldUser));
 
         }
         callbackFn(result);
@@ -64,8 +64,9 @@ io.on('connection', socket => {
 
     socket.on('disconnect', () => {
         let user = Boolean(users[socket.id]) ? users[socket.id] : { nickname:'unknown user' } ;
-        msgHistory.push(buildUserDisconnectedMsg(user.nickname));
-        socket.emit('userDisconnected', user.nickname);
+        let userDisconnectedMsg = buildUserDisconnectedMsg(user.nickname);
+        msgHistory.push(userDisconnectedMsg);
+        io.emit('userDisconnected', userDisconnectedMsg);
         socket.broadcast.emit('userChange', buildUserChangeMsg(socket.id, 'remove'));
         removeUser(socket.id);
     });
