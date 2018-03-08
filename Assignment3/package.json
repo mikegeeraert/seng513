@@ -1,7 +1,7 @@
 {
-    "name": "socket-chat-example",
-    "version": "0.0.1",
-    "description": "my first socket.io app",
+    "name": "cream-chat",
+    "version": "1.0.2",
+    "description": "CREAM (Chat Rules Everything Around Me)",
     "dependencies": {
         "express": "^4.14.1",
         "request": "^2.83.0",
