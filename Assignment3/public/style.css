@@ -25,22 +25,10 @@ form div.mdl-textfield {
     display: flex;
 }
 
-.chat-window {
-    display: flex;
-    flex-direction: column-reverse;
-    min-height: -webkit-min-content;
-    min-height: -moz-min-content;
-}
-
 .activity-message {
     text-align: center;
 }
 
 .users-window {
-    flex-grow: 1;
-    flex-wrap: wrap;
-    min-width: 100px;
-    display: flex;
-    align-items: flex-start;
-    align-content: flex-start;
+
 }

@@ -7,27 +7,40 @@
 
   </head>
   <body class="container">
-    <div class="scroll-window" id="scroll-window">
-      <div class="chat-window">
+  <!-- Uses a header that contracts as the page scrolls down. -->
+  <style>
+    .demo-layout-waterfall .mdl-layout__header-row .mdl-navigation__link:last-of-type  {
+      padding-right: 0;
+    }
+  </style>
+
+  <div class="demo-layout-waterfall mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
+    <header class="mdl-layout__header">
+      <!-- Top row, always visible -->
+      <div class="mdl-layout__header-row">
+        <!-- Title -->
+        <span class="mdl-layout-title">MENTO - Michael's Excellently Not-difficult Talking dOohickey</span>
+        <div class="mdl-layout-spacer"></div>
+      </div>
+    </header>
+    <div class="mdl-layout__drawer">
+      <span class="mdl-layout-title">Users</span>
+      <nav class="mdl-navigation" id="users-card">
+      </nav>
+    </div>
+    <main class="mdl-layout__content">
+      <div id="scroll-window" class="page-content scroll-window">
         <ul class="mdl-list" id="messages">
         </ul>
       </div>
-    </div>
-    <div class="users-window">
-      <div class="users-card mdl-card mdl-shadow--2dp">
-        <div class="mdl-card__title">
-          <h2 class="mdl-card__title-text">Current Users</h2>
+      <form action="#">
+        <div class="mdl-textfield mdl-js-textfield">
+          <input class="mdl-textfield__input" type="text" id="m">
+          <label class="mdl-textfield__label" for="m">Chat, or use /nick, /nickcolor to change your settings</label>
         </div>
-        <div id="users-card" class="mdl-card__supporting-text">
-        </div>
-      </div>
-    </div>
-    <form action="#">
-      <div class="mdl-textfield mdl-js-textfield">
-        <input class="mdl-textfield__input" type="text" id="m">
-        <label class="mdl-textfield__label" for="m">Chat, or use /nick, /nickcolor to change your settings</label>
-      </div>
-    </form>
+      </form>
+    </main>
+  </div>
   <div id="error-toast" class="mdl-js-snackbar mdl-snackbar">
     <div class="mdl-snackbar__text"></div>
     <button class="mdl-snackbar__action" type="button"></button>
