@@ -18,7 +18,13 @@ form div.mdl-textfield {
     overflow: auto;
     height: calc(100vh - 151px);
     display: flex;
-    align-items: flex-end;
+}
+
+.chat-window {
+    display: flex;
+    flex-direction: column-reverse;
+    min-height: -webkit-min-content;
+    min-height: -moz-min-content;
 }
 
 .activity-message {
