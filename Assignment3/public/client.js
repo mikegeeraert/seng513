@@ -62,6 +62,9 @@ $(function() {
                     case 'no-change':
                         errorText = 'Oops, you already have this nickname!';
                         break;
+                    case 'empty':
+                        errorText = 'Oops, you gave an empty name!';
+                        break;
                     default:
                         errorText = 'There was an error that we did not expect. Please try again, differently.';
                         break;
@@ -95,6 +98,7 @@ $(function() {
                         break;
                     case 'not-available':
                         resultText = 'Oh, sorry, that color is not available';
+                        break;
                     default:
                         resultText = 'There was an error that we did not expect. Please try again differently, and we will too.';
                         break;

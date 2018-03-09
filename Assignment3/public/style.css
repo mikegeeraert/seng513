@@ -14,22 +14,13 @@ form div.mdl-textfield {
     width: 100%
 }
 
-.users-card.mdl-card {
-    width: 100%;
-    margin: 20px;
-}
-
 .scroll-window {
     overflow: auto;
     height: calc(100vh - 151px);
-    flex-grow: 5;
     display: flex;
+    align-items: flex-end;
 }
 
 .activity-message {
     text-align: center;
-}
-
-.users-window {
-
 }

@@ -47,8 +47,9 @@ io.on('connection', socket => {
         let oldUser = Object.assign({nickname: users[socket.id].nickname, color: users[socket.id].color});
         let result  = changeNickname(deltaNickname, socket.id);
         if (result['err'] === undefined) {
-            msgHistory.push(buildChangedNicknameMsg(result));
-            io.emit('changedNickname', deltaNickname);
+            let changedNicknameMsg = buildChangedNicknameMsg(result);
+            msgHistory.push(changedNicknameMsg);
+            io.emit('changedNickname', changedNicknameMsg);
             socket.broadcast.emit('userChange', buildUserChangeMsg(socket.id, 'update', oldUser));
 
         }
@@ -136,6 +137,7 @@ function changeNickname(deltaNickname, socketId) {
     if (!Boolean(user)) result = {err: 'user-not-found'};
     else if (deltaNickname.oldNickname === deltaNickname.newNickname) result = {err: 'no-change'};
     else if (nameAlreadyExists(deltaNickname.newNickname)) result =  {err: 'collision'};
+    else if (!Boolean(deltaNickname.newNickname)) result = {err: 'empty'};
     else {
         users[socketId].nickname = deltaNickname.newNickname;
         result = deltaNickname;
@@ -146,11 +148,13 @@ function changeNickname(deltaNickname, socketId) {
 function changeColor(deltaColor, socketId) {
     let result = {};
     let user = users[socketId];
+    let newColor = deltaColor.newColor.toLowerCase();
     if (!Boolean(user)) result = {err: 'user-not-found'};
-    else if (deltaColor.oldColor === deltaColor.newColor) result = { err: 'no-change' };
-    else if (!AvailableUserColors.includes(deltaColor.newColor)) result = {err: 'not-available'};
+    else if (deltaColor.oldColor === newColor) result = { err: 'no-change' };
+    else if (!AvailableUserColors.includes(newColor)) result = {err: 'not-available'};
     else {
-        users[socketId].color = deltaColor.newColor;
+        users[socketId].color = newColor;
+        deltaColor.newColor = newColor;
         result = deltaColor;
     }
     return result;
