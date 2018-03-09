@@ -1,7 +1,7 @@
 {
-    "name": "cream-chat",
+    "name": "mento",
     "version": "1.0.2",
-    "description": "CREAM (Chat Rules Everything Around Me)",
+    "description": "Mento - Michaels Excellently Not-difficult Talking dOohicky",
     "dependencies": {
         "express": "^4.14.1",
         "request": "^2.83.0",
