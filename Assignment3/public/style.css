@@ -29,6 +29,7 @@ form div.mdl-textfield {
     display: flex;
     flex-direction: column-reverse;
     min-height: -webkit-min-content;
+    min-height: -moz-min-content;
 }
 
 .activity-message {

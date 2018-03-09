@@ -16,10 +16,10 @@ $(function() {
 	    $('#m').val('');
 	    return false;
     });
-    socket.on('chat', msg => displayChatMessage(msg));
-    socket.on('changedNickname', msg => displayChangedNickname(msg));
-    socket.on('newUser', msg => displayNewUser(msg));
-    socket.on('userDisconnected', msg => displayUserDisconnected(msg));
+    socket.on('chat', msg => displayMessage(msg));
+    socket.on('changedNickname', msg => displayMessage(msg));
+    socket.on('newUser', msg => displayMessage(msg));
+    socket.on('userDisconnected', msg => displayMessage(msg));
     socket.on('userChange', msg => updateUserList(msg));
     socket.on('chatHistory', msg => setChatHistory(msg));
 
@@ -164,7 +164,7 @@ $(function() {
             default:
                 break;
         }
-        $
+        $("#scroll-window").scrollTop($("#scroll-window")[0].scrollHeight);
     }
 
     function displayUsers(userList) {
@@ -189,7 +189,7 @@ $(function() {
         let localeOptions = {hour: 'numeric', minute: 'numeric'};
         msg.timestamp = new Date(msg.timestamp).toLocaleTimeString('en-US', localeOptions);
         msg['firstLetter'] = msg.nickname.charAt(0).toUpperCase();
-        console.log(msg);
+        msg['isThisUser'] = msg.nickname === getUserInfo().nickname;
         $('#messages').append(chatTemplate(msg));
 
     }

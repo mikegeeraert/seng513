@@ -7,7 +7,7 @@
 
   </head>
   <body class="container">
-    <div class="scroll-window">
+    <div class="scroll-window" id="scroll-window">
       <div class="chat-window">
         <ul class="mdl-list" id="messages">
         </ul>
@@ -43,7 +43,11 @@
         <span class="mdl-chip__contact mdl-color--<%- rc.color %> mdl-color-text--white"><%- rc.firstLetter %></span>
           <span class="mdl-chip__text"><b><%- rc.nickname %></b> at <%- rc.timestamp %> </span>
       </span>
-      <%- rc.msg %>
+      <% if (rc.isThisUser) { %>
+        <b><%- rc.msg %></b>
+      <% } else { %>
+        <%- rc.msg %>
+      <% } %>
     </span>
   </li>
 </script>
