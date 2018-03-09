@@ -23,7 +23,7 @@ app.use(express.static(__dirname + '/public'));
 io.on('connection', socket => {
 
     socket.on('chat', function(msg){
-        msgHistory.push(buildChatMsg(msg, socket.id));
+        msgHistory.push(buildChatMsg(msg));
 	    io.emit('chat', msgHistory[msgHistory.length-1]);
     });
 
@@ -70,13 +70,18 @@ io.on('connection', socket => {
         socket.broadcast.emit('userChange', buildUserChangeMsg(socket.id, 'remove'));
         removeUser(socket.id);
     });
+
+    socket.on('resetChat', () => {
+       msgHistory = [];
+       io.emit('chatHistory', msgHistory);
+    });
 });
 
-function buildChatMsg (msg, socketId) {
+function buildChatMsg (msg) {
     return {
         type : 'chat',
-        nickname : msg.nickname,
-        color : users[socketId].color,
+        nickname : msg.user.nickname,
+        color : msg.user.color,
         msg : msg.msg,
         timestamp : Date.now()
     }

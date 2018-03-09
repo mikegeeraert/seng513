@@ -21,6 +21,7 @@ $(function() {
     socket.on('newUser', msg => displayNewUser(msg));
     socket.on('userDisconnected', msg => displayUserDisconnected(msg));
     socket.on('userChange', msg => updateUserList(msg));
+    socket.on('chatHistory', msg => setChatHistory(msg));
 
     function determineAction(input) {
         let command  = input.split(' ')[0];
@@ -32,6 +33,9 @@ $(function() {
                 break;
             case '/nickcolor':
                 changeColor(option);
+                break;
+            case '/reset':
+                resetChat();
                 break;
             default:
                 socket.emit('chat', buildChatMessage(input));
@@ -105,9 +109,13 @@ $(function() {
         }
     }
 
+    function resetChat() {
+        socket.emit('resetChat');
+    }
+
     function buildChatMessage(msg) {
         return {
-            nickname: getUserInfo().nickname,
+            user: getUserInfo(),
             msg: msg
         }
     }
@@ -133,24 +141,30 @@ $(function() {
         users = response.allUsers;
         displayUsers(users);
         response.msgHistory.forEach(msg => displayMessage(msg));
+    }
 
-        function displayMessage(msg) {
-            switch(msg.type){
-                case 'chat':
-                    displayChatMessage(msg);
-                    break;
-                case 'changedNickname':
-                    displayChangedNickname(msg);
-                    break;
-                case 'newUser':
-                    displayNewUser(msg);
-                    break;
-                case 'userDisconnected':
-                    displayUserDisconnected(msg);
-                default:
-                    break;
-            }
+    function setChatHistory(msg) {
+        $('#messages').empty();
+        msg.forEach(msg => displayMessage(msg));
+    }
+
+    function displayMessage(msg) {
+        switch(msg.type){
+            case 'chat':
+                displayChatMessage(msg);
+                break;
+            case 'changedNickname':
+                displayChangedNickname(msg);
+                break;
+            case 'newUser':
+                displayNewUser(msg);
+                break;
+            case 'userDisconnected':
+                displayUserDisconnected(msg);
+            default:
+                break;
         }
+        $
     }
 
     function displayUsers(userList) {
