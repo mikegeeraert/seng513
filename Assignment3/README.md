@@ -1,7 +1,23 @@
-# chat-example
+# MENTO - Michael's Excellently Not-difficult Talking dOohicky
 
-This is the source code for a very simple chat example used for 
-the [Getting Started](http://socket.io/get-started/chat/) guide 
-of the Socket.IO website.
+## Requirements
+ - npm installed
+ - node.js installed
+ - git (optional for step 1 of Getting started)
+ - An internet connection (for requesting cdn dependencies and simple ajax calls to the Wordnik API)
 
-Please refer to it to learn how to run this application.
+## Getting Started
+1. Download this repository to your local machine using git:
+  `git clone https://github.com/mikegeeraert/seng513.git`
+  **or**
+  Download the zip file and unpack locally
+  
+2. Navigate to /Assignment3 and install all the the project dependencies using: 
+  `npm install`
+
+3. Upon successful installation of all packages, run the node server:
+  `node index.js`
+
+4. Using your browser, navigate to `localhost:3000`. 
+
+5. Start Chatting!
