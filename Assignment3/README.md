@@ -21,3 +21,28 @@
 4. Using your browser, navigate to `localhost:3000`. 
 
 5. Start Chatting!
+
+
+## Special Instructions
+
+Using the `/nickcolor` command in the chat (ie */nickcolor green*), the color choices are as follows:
+- red 
+- pink
+- purple
+- deep-purple
+- indigo
+- blue
+- light-blue
+- cyan
+- teal
+- green
+- light-green
+- lime
+- yellow
+- amber
+- orange
+- deep-orange
+- brown
+- grey
+- blue-grey
+- black
