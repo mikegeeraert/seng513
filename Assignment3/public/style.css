@@ -6,7 +6,8 @@
 }
 
 form {
-    width: 100%;
+    padding: 0px 20px;
+    width: inherit;
 }
 
 form div.mdl-textfield {
@@ -20,7 +21,7 @@ form div.mdl-textfield {
 
 .scroll-window {
     overflow: auto;
-    height: calc(100vh - 67px);
+    height: calc(100vh - 151px);
     flex-grow: 5;
     display: flex;
 }

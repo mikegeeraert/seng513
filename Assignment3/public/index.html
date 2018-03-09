@@ -50,17 +50,20 @@
 
 
 <script type="text/template" id="chat_message">
-  <li class="mdl-list__item">
+  <li class="mdl-list__item mdl-list__item--three-line">
     <span class="mdl-list__item-primary-content">
-      <span class="mdl-chip mdl-chip--contact">
         <span class="mdl-chip__contact mdl-color--<%- rc.color %> mdl-color-text--white"><%- rc.firstLetter %></span>
-          <span class="mdl-chip__text"><b><%- rc.nickname %></b> at <%- rc.timestamp %> </span>
-      </span>
+      <span><b><%- rc.nickname %></b> at <%- rc.timestamp %></span>
+      <% if (rc.isThisUser) { %>
+        <i class="material-icons">star</i>
+      <% } %>
+      <span class="mdl-list__item-text-body">
       <% if (rc.isThisUser) { %>
         <b><%- rc.msg %></b>
       <% } else { %>
         <%- rc.msg %>
       <% } %>
+      </span>
     </span>
   </li>
 </script>
